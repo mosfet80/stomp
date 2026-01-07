@@ -18,10 +18,10 @@ jobs:
       CI_NAME: Clang-Format
       OS_NAME: ubuntu
       OS_CODE_NAME: bionic
-      ROS_DISTRO: melodic
+      ROS_DISTRO: humble
       ROS_REPO: main
       CLANG_FORMAT_CHECK: file
-      CLANG_FORMAT_VERSION: 8
+      CLANG_FORMAT_VERSION: 16
     steps:
       - uses: actions/checkout@v4
 
