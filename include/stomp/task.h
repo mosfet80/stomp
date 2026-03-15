@@ -26,9 +26,9 @@
 #ifndef STOMP_TASK_H_
 #define STOMP_TASK_H_
 
+#include <stomp/utils.h>
 #include <Eigen/Core>
 #include <memory>
-#include <stomp/utils.h>
 
 namespace stomp
 {
@@ -52,13 +52,9 @@ public:
    * @param noise             The noise applied to the parameters
    * @return True if cost were properly computed, otherwise false
    */
-  virtual bool generateNoisyParameters(const Eigen::MatrixXd& parameters,
-                                       std::size_t start_timestep,
-                                       std::size_t num_timesteps,
-                                       int iteration_number,
-                                       int rollout_number,
-                                       Eigen::MatrixXd& parameters_noise,
-                                       Eigen::MatrixXd& noise) = 0;
+  virtual bool generateNoisyParameters(
+    const Eigen::MatrixXd & parameters, std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, int rollout_number,
+    Eigen::MatrixXd & parameters_noise, Eigen::MatrixXd & noise) = 0;
 
   /**
    * @brief computes the state costs as a function of the noisy parameters for each time step.
@@ -71,13 +67,9 @@ public:
    * @param validity          Whether or not the trajectory is valid
    * @return True if cost were properly computed, otherwise false
    */
-  virtual bool computeNoisyCosts(const Eigen::MatrixXd& parameters,
-                                 std::size_t start_timestep,
-                                 std::size_t num_timesteps,
-                                 int iteration_number,
-                                 int rollout_number,
-                                 Eigen::VectorXd& costs,
-                                 bool& validity) = 0;
+  virtual bool computeNoisyCosts(
+    const Eigen::MatrixXd & parameters, std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, int rollout_number,
+    Eigen::VectorXd & costs, bool & validity) = 0;
 
   /**
    * @brief computes the state costs as a function of the optimized parameters for each time step.
@@ -89,12 +81,9 @@ public:
    * @param validity          Whether or not the trajectory is valid
    * @return True if cost were properly computed, otherwise false
    */
-  virtual bool computeCosts(const Eigen::MatrixXd& parameters,
-                            std::size_t start_timestep,
-                            std::size_t num_timesteps,
-                            int iteration_number,
-                            Eigen::VectorXd& costs,
-                            bool& validity) = 0;
+  virtual bool computeCosts(
+    const Eigen::MatrixXd & parameters, std::size_t start_timestep, std::size_t num_timesteps, int iteration_number,
+    Eigen::VectorXd & costs, bool & validity) = 0;
 
   /**
    * @brief Filters the given noisy parameters which is applied after noisy trajectory generation. It could be used for
@@ -108,12 +97,9 @@ public:
    * @param filtered          False if no filtering was done
    * @return False if no filtering was done, otherwise true
    */
-  virtual bool filterNoisyParameters(std::size_t start_timestep,
-                                     std::size_t num_timesteps,
-                                     int iteration_number,
-                                     int rollout_number,
-                                     Eigen::MatrixXd& parameters,
-                                     bool& filtered)
+  virtual bool filterNoisyParameters(
+    std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, int rollout_number, Eigen::MatrixXd & parameters,
+    bool & filtered)
   {
     filtered = false;
     return true;
@@ -130,11 +116,9 @@ public:
    * @param updates           The updates to the parameters
    * @return                  True if successful, otherwise false
    */
-  virtual bool filterParameterUpdates(std::size_t start_timestep,
-                                      std::size_t num_timesteps,
-                                      int iteration_number,
-                                      const Eigen::MatrixXd& parameters,
-                                      Eigen::MatrixXd& updates)
+  virtual bool filterParameterUpdates(
+    std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, const Eigen::MatrixXd & parameters,
+    Eigen::MatrixXd & updates)
   {
     return true;
   }
@@ -148,11 +132,8 @@ public:
    * @param parameters        The value of the parameters at the end of the current iteration [num_dimensions x
    * num_timesteps].
    */
-  virtual void postIteration(std::size_t start_timestep,
-                             std::size_t num_timesteps,
-                             int iteration_number,
-                             double cost,
-                             const Eigen::MatrixXd& parameters)
+  virtual void postIteration(
+    std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, double cost, const Eigen::MatrixXd & parameters)
   {
   }
 
@@ -164,7 +145,7 @@ public:
    * @param final_cost        The cost value after optimizing.
    * @param parameters        The parameters generated at the end of the optimization [num_dimensions x num_timesteps]
    */
-  virtual void done(bool success, int total_iterations, double final_cost, const Eigen::MatrixXd& parameters) {}
+  virtual void done(bool success, int total_iterations, double final_cost, const Eigen::MatrixXd & parameters) {}
 };
 
 }  // namespace stomp

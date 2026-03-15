@@ -23,22 +23,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <iostream>
-#include <Eigen/Dense>
 #include <gtest/gtest.h>
 #include <stomp/stomp.h>
 #include <stomp/task.h>
+#include <Eigen/Dense>
+#include <iostream>
 
 using Trajectory = Eigen::MatrixXd; /**< Assign Type Trajectory to Eigen::MatrixXd Type */
 
-const std::size_t NUM_DIMENSIONS = 3;                               /**< Number of parameters to optimize */
-const std::size_t NUM_TIMESTEPS = 20;                               /**< Number of timesteps */
-const double DELTA_T = 0.1;                                         /**< Timestep in seconds */
-const std::vector<double> START_POS = { 1.4, 1.4, 0.5 };            /**< Trajectory starting position */
-const std::vector<double> END_POS = { -1.25, 1.0, -0.26 };          /**< Trajectory ending posiiton */
-const std::vector<double> BIAS_THRESHOLD = { 0.050, 0.050, 0.050 }; /**< Threshold to determine whether two trajectories
-                                                                       are equal */
-const std::vector<double> STD_DEV = { 1.0, 1.0, 1.0 }; /**< Standard deviation used for generating noisy parameters */
+const std::size_t NUM_DIMENSIONS = 3;                             /**< Number of parameters to optimize */
+const std::size_t NUM_TIMESTEPS = 20;                             /**< Number of timesteps */
+const double DELTA_T = 0.1;                                       /**< Timestep in seconds */
+const std::vector<double> START_POS = {1.4, 1.4, 0.5};            /**< Trajectory starting position */
+const std::vector<double> END_POS = {-1.25, 1.0, -0.26};          /**< Trajectory ending posiiton */
+const std::vector<double> BIAS_THRESHOLD = {0.050, 0.050, 0.050}; /**< Threshold to determine whether two trajectories
+                                                                     are equal */
+const std::vector<double> STD_DEV = {1.0, 1.0, 1.0};              /**< Standard deviation used for generating noisy parameters */
 
 using namespace stomp;
 
@@ -52,10 +52,8 @@ public:
    * @param bias_thresholds threshold to determine whether two trajectories are equal
    * @param std_dev standard deviation used for generating noisy parameters
    */
-  DummyTask(const Trajectory& parameters_bias,
-            const std::vector<double>& bias_thresholds,
-            const std::vector<double>& std_dev)
-    : parameters_bias_(parameters_bias), bias_thresholds_(bias_thresholds), std_dev_(std_dev)
+  DummyTask(const Trajectory & parameters_bias, const std::vector<double> & bias_thresholds, const std::vector<double> & std_dev)
+  : parameters_bias_(parameters_bias), bias_thresholds_(bias_thresholds), std_dev_(std_dev)
   {
     // generate smoothing matrix
     int num_timesteps = parameters_bias.cols();
@@ -64,13 +62,9 @@ public:
   }
 
   /** @brief See base clase for documentation */
-  bool generateNoisyParameters(const Eigen::MatrixXd& parameters,
-                               std::size_t start_timestep,
-                               std::size_t num_timesteps,
-                               int iteration_number,
-                               int rollout_number,
-                               Eigen::MatrixXd& parameters_noise,
-                               Eigen::MatrixXd& noise) override
+  bool generateNoisyParameters(
+    const Eigen::MatrixXd & parameters, std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, int rollout_number,
+    Eigen::MatrixXd & parameters_noise, Eigen::MatrixXd & noise) override
   {
     double rand_noise;
     for (std::size_t d = 0; d < parameters.rows(); d++)
@@ -88,23 +82,16 @@ public:
     return true;
   }
 
-  bool computeCosts(const Trajectory& parameters,
-                    std::size_t start_timestep,
-                    std::size_t num_timesteps,
-                    int iteration_number,
-                    Eigen::VectorXd& costs,
-                    bool& validity) override
+  bool computeCosts(
+    const Trajectory & parameters, std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, Eigen::VectorXd & costs,
+    bool & validity) override
   {
     return computeNoisyCosts(parameters, start_timestep, num_timesteps, iteration_number, -1, costs, validity);
   }
 
-  bool computeNoisyCosts(const Trajectory& parameters,
-                         std::size_t start_timestep,
-                         std::size_t num_timesteps,
-                         int iteration_number,
-                         int rollout_number,
-                         Eigen::VectorXd& costs,
-                         bool& validity) override
+  bool computeNoisyCosts(
+    const Trajectory & parameters, std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, int rollout_number,
+    Eigen::VectorXd & costs, bool & validity) override
   {
     costs.setZero(num_timesteps);
     double diff;
@@ -130,11 +117,9 @@ public:
     return true;
   }
 
-  bool filterParameterUpdates(std::size_t start_timestep,
-                              std::size_t num_timesteps,
-                              int iteration_number,
-                              const Eigen::MatrixXd& parameters,
-                              Eigen::MatrixXd& updates) override
+  bool filterParameterUpdates(
+    std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, const Eigen::MatrixXd & parameters,
+    Eigen::MatrixXd & updates) override
   {
     return smoothParameterUpdates(start_timestep, num_timesteps, iteration_number, updates);
   }
@@ -144,14 +129,11 @@ protected:
    * @brief Perform a smooth update given a noisy update
    * @param start_timestep starting timestep
    * @param num_timesteps number of timesteps
-   * @param iteration_number number of interations allowed
+   * @param iteration_number number of iterations allowed
    * @param updates returned smooth update
    * @return True if successful, otherwise false
    */
-  bool smoothParameterUpdates(std::size_t start_timestep,
-                              std::size_t num_timesteps,
-                              int iteration_number,
-                              Eigen::MatrixXd& updates)
+  bool smoothParameterUpdates(std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, Eigen::MatrixXd & updates)
   {
     for (auto d = 0u; d < updates.rows(); d++)
     {
@@ -175,7 +157,7 @@ protected:
  * @param thresholds used to determine if two values are equal
  * @return True if the difference between the two is less than the threshold, otherwise false
  */
-bool compareDiff(const Trajectory& optimized, const Trajectory& desired, const std::vector<double>& thresholds)
+bool compareDiff(const Trajectory & optimized, const Trajectory & desired, const std::vector<double> & thresholds)
 {
   auto num_dimensions = optimized.rows();
   Trajectory diff = Trajectory::Zero(num_dimensions, optimized.cols());
@@ -219,10 +201,7 @@ StompConfiguration create3DOFConfiguration()
  * @param num_timesteps number of timesteps
  * @param traj returned linear interpolated trajectory
  */
-void interpolate(const std::vector<double>& start,
-                 const std::vector<double>& end,
-                 std::size_t num_timesteps,
-                 Trajectory& traj)
+void interpolate(const std::vector<double> & start, const std::vector<double> & end, std::size_t num_timesteps, Trajectory & traj)
 {
   auto dimensions = start.size();
   traj = Eigen::MatrixXd::Zero(dimensions, num_timesteps);
@@ -277,7 +256,7 @@ TEST(Stomp3DOF, solve_default)
             << toString(diff) << line_separator;
 }
 
-/** @brief This tests the Stomp solve method using a linear interpolated inital trajectory */
+/** @brief This tests the Stomp solve method using a linear interpolated initial trajectory */
 TEST(Stomp3DOF, solve_interpolated_initial)
 {
   Trajectory trajectory_bias;
@@ -309,7 +288,7 @@ TEST(Stomp3DOF, solve_interpolated_initial)
             << toString(diff) << line_separator;
 }
 
-/** @brief This tests the Stomp solve method using a cubic polynomial interpolated inital trajectory */
+/** @brief This tests the Stomp solve method using a cubic polynomial interpolated initial trajectory */
 TEST(Stomp3DOF, solve_cubic_polynomial_initial)
 {
   Trajectory trajectory_bias;
@@ -341,7 +320,7 @@ TEST(Stomp3DOF, solve_cubic_polynomial_initial)
             << toString(diff) << line_separator;
 }
 
-/** @brief This tests the Stomp solve method using a minimum cost inital trajectory */
+/** @brief This tests the Stomp solve method using a minimum cost initial trajectory */
 TEST(Stomp3DOF, solve_min_control_cost_initial)
 {
   Trajectory trajectory_bias;

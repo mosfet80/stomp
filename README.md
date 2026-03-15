@@ -22,7 +22,7 @@ catkin build
 #### Build Unit Test
 Cd into the catkin workspace directory and type the following command:
 ```
-catkin build --cmake-args -DSTOMP_ENABLE_TESTING=ON 
+catkin build --cmake-args -DSTOMP_ENABLE_TESTING=ON
 ```
 
 #### Run Unit Test

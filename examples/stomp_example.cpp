@@ -24,24 +24,23 @@
  * limitations under the License.
  */
 
-#include <iostream>
-#include <Eigen/Dense>
 #include <stomp/stomp.h>
+#include <Eigen/Dense>
+#include <iostream>
 #include "simple_optimization_task.h"
 
 using Trajectory = Eigen::MatrixXd; /**< Assign Type Trajectory to Eigen::MatrixXd Type */
 
 /**< Declaring optimization variables */
-static const std::size_t NUM_DIMENSIONS = 3;                               /**< Number of parameters to optimize */
-static const std::size_t NUM_TIMESTEPS = 20;                               /**< Number of timesteps */
-static const double DELTA_T = 0.1;                                         /**< Timestep in seconds */
-static const std::vector<double> START_POS = { 1.4, 1.4, 0.5 };            /**< Trajectory starting position */
-static const std::vector<double> END_POS = { -1.25, 1.0, -0.26 };          /**< Trajectory ending posiiton */
-static const std::vector<double> BIAS_THRESHOLD = { 0.050, 0.050, 0.050 }; /**< Threshold to determine whether two
-                                                                              trajectories are equal */
-static const std::vector<double> STD_DEV = { 1.0, 1.0, 1.0 }; /**< Standard deviation used for generating noisy
-                                                                 parameters */
-
+static const std::size_t NUM_DIMENSIONS = 3;                             /**< Number of parameters to optimize */
+static const std::size_t NUM_TIMESTEPS = 20;                             /**< Number of timesteps */
+static const double DELTA_T = 0.1;                                       /**< Timestep in seconds */
+static const std::vector<double> START_POS = {1.4, 1.4, 0.5};            /**< Trajectory starting position */
+static const std::vector<double> END_POS = {-1.25, 1.0, -0.26};          /**< Trajectory ending posiiton */
+static const std::vector<double> BIAS_THRESHOLD = {0.050, 0.050, 0.050}; /**< Threshold to determine whether two
+                                                                            trajectories are equal */
+static const std::vector<double> STD_DEV = {1.0, 1.0, 1.0};              /**< Standard deviation used for generating noisy
+                                                                            parameters */
 /**
  * @brief Creates a STOMP configuration object with default parameters.
  * @return A STOMP configuration object
@@ -73,7 +72,7 @@ stomp::StompConfiguration create3DOFConfiguration()
  * @param thresholds used to determine if two values are equal
  * @return True if the difference between the two is less than the threshold, otherwise false
  */
-bool compareDiff(const Trajectory& optimized, const Trajectory& desired, const std::vector<double>& thresholds)
+bool compareDiff(const Trajectory & optimized, const Trajectory & desired, const std::vector<double> & thresholds)
 {
   auto num_dimensions = optimized.rows();
   Trajectory diff = Trajectory::Zero(num_dimensions, optimized.cols());
@@ -97,10 +96,7 @@ bool compareDiff(const Trajectory& optimized, const Trajectory& desired, const s
  * @param num_timesteps number of timesteps
  * @param traj returned linear interpolated trajectory
  */
-void interpolate(const std::vector<double>& start,
-                 const std::vector<double>& end,
-                 std::size_t num_timesteps,
-                 Trajectory& traj)
+void interpolate(const std::vector<double> & start, const std::vector<double> & end, std::size_t num_timesteps, Trajectory & traj)
 {
   auto dimensions = start.size();
   traj = Eigen::MatrixXd::Zero(dimensions, num_timesteps);
@@ -114,7 +110,7 @@ void interpolate(const std::vector<double>& start,
   }
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   using namespace stomp_examples;
   using namespace stomp;

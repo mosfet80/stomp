@@ -5,8 +5,8 @@
  * @section Description Description
  * This package contains the STOMP Core algorithm. The acronym STOMP
  * stands for "Stochastic Trajectory Optimization for Motion Planning".
- * This planner can produce smooths, collision-free paths for high-dimensional 
- * robotic systems that satisfy various task constraints in order to minimize 
+ * This planner can produce smooths, collision-free paths for high-dimensional
+ * robotic systems that satisfy various task constraints in order to minimize
  * energy consumption or optimize other user-chosen
  * criteria. STOMP leverages gradient-free optimization and path
  * integral reinforcement learning techniques (Policy Improvement with

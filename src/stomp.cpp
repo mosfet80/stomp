@@ -26,16 +26,16 @@
 
 #include <console_bridge/console.h>
 #include <limits.h>
-#include <Eigen/LU>
-#include <Eigen/Cholesky>
 #include <math.h>
-#include <numeric>
-#include <stomp/utils.h>
 #include <stomp/stomp.h>
+#include <stomp/utils.h>
+#include <Eigen/Cholesky>
+#include <Eigen/LU>
+#include <numeric>
 
 static const double DEFAULT_NOISY_COST_IMPORTANCE_WEIGHT = 1.0; /**< Default noisy cost importance weight */
-static const double MIN_COST_DIFFERENCE = 1e-8; /**< Minimum cost difference allowed during probability calculation */
-static const double MIN_CONTROL_COST_WEIGHT = 1e-8; /**< Minimum control cost weight allowed */
+static const double MIN_COST_DIFFERENCE = 1e-8;                 /**< Minimum cost difference allowed during probability calculation */
+static const double MIN_CONTROL_COST_WEIGHT = 1e-8;             /**< Minimum control cost weight allowed */
 
 /**
  * @brief Compute a linear interpolated trajectory given a start and end state
@@ -44,10 +44,8 @@ static const double MIN_CONTROL_COST_WEIGHT = 1e-8; /**< Minimum control cost we
  * @param num_timesteps     The number of timesteps
  * @param trajectory_joints The returned linear interpolated trajectory
  */
-static void computeLinearInterpolation(const std::vector<double>& first,
-                                       const std::vector<double>& last,
-                                       int num_timesteps,
-                                       Eigen::MatrixXd& trajectory_joints)
+static void computeLinearInterpolation(
+  const std::vector<double> & first, const std::vector<double> & last, int num_timesteps, Eigen::MatrixXd & trajectory_joints)
 {
   trajectory_joints.setZero(first.size(), num_timesteps);
   for (int unsigned i = 0; i < first.size(); i++)
@@ -68,11 +66,8 @@ static void computeLinearInterpolation(const std::vector<double>& first,
  * @param dt                The timestep in seconds
  * @param trajectory_joints The returned cubic interpolated trajectory
  */
-static void computeCubicInterpolation(const std::vector<double>& first,
-                                      const std::vector<double>& last,
-                                      int num_points,
-                                      double dt,
-                                      Eigen::MatrixXd& trajectory_joints)
+static void computeCubicInterpolation(
+  const std::vector<double> & first, const std::vector<double> & last, int num_points, double dt, Eigen::MatrixXd & trajectory_joints)
 {
   std::vector<double> coeffs(4, 0);
   double total_time = (num_points - 1) * dt;
@@ -96,15 +91,13 @@ static void computeCubicInterpolation(const std::vector<double>& first,
  * @param first                        The start position
  * @param last                         The final position
  * @param control_cost_matrix_R_padded The control cost matrix with padding
- * @param inv_control_cost_matrix_R    The inverse constrol cost matrix
+ * @param inv_control_cost_matrix_R    The inverse control cost matrix
  * @param trajectory_joints            The returned minimum cost trajectory
  * @return True if successful, otherwise false
  */
-bool computeMinCostTrajectory(const std::vector<double>& first,
-                              const std::vector<double>& last,
-                              const Eigen::MatrixXd& control_cost_matrix_R_padded,
-                              const Eigen::MatrixXd& inv_control_cost_matrix_R,
-                              Eigen::MatrixXd& trajectory_joints)
+bool computeMinCostTrajectory(
+  const std::vector<double> & first, const std::vector<double> & last, const Eigen::MatrixXd & control_cost_matrix_R_padded,
+  const Eigen::MatrixXd & inv_control_cost_matrix_R, Eigen::MatrixXd & trajectory_joints)
 {
   using namespace stomp;
 
@@ -122,14 +115,12 @@ bool computeMinCostTrajectory(const std::vector<double>& first,
 
   for (unsigned int d = 0; d < first.size(); d++)
   {
-    linear_control_cost[d].transpose() =
-        first[d] * Eigen::VectorXd::Ones(FINITE_DIFF_RULE_LENGTH - 1).transpose() *
-        control_cost_matrix_R_padded.block(0, start_index_padded, FINITE_DIFF_RULE_LENGTH - 1, timesteps);
+    linear_control_cost[d].transpose() = first[d] * Eigen::VectorXd::Ones(FINITE_DIFF_RULE_LENGTH - 1).transpose() *
+                                         control_cost_matrix_R_padded.block(0, start_index_padded, FINITE_DIFF_RULE_LENGTH - 1, timesteps);
 
     linear_control_cost[d].transpose() +=
-        last[d] * Eigen::VectorXd::Ones(FINITE_DIFF_RULE_LENGTH - 1).transpose() *
-        control_cost_matrix_R_padded.block(
-            end_index_padded + 1, start_index_padded, FINITE_DIFF_RULE_LENGTH - 1, timesteps);
+      last[d] * Eigen::VectorXd::Ones(FINITE_DIFF_RULE_LENGTH - 1).transpose() *
+      control_cost_matrix_R_padded.block(end_index_padded + 1, start_index_padded, FINITE_DIFF_RULE_LENGTH - 1, timesteps);
 
     linear_control_cost[d] *= 2;
 
@@ -149,11 +140,9 @@ bool computeMinCostTrajectory(const std::vector<double>& first,
  * @param control_cost_matrix_R The control cost matrix
  * @param control_costs returns The parameters control costs
  */
-void computeParametersControlCosts(const Eigen::MatrixXd& parameters,
-                                   double dt,
-                                   double control_cost_weight,
-                                   const Eigen::MatrixXd& control_cost_matrix_R,
-                                   Eigen::MatrixXd& control_costs)
+void computeParametersControlCosts(
+  const Eigen::MatrixXd & parameters, double dt, double control_cost_weight, const Eigen::MatrixXd & control_cost_matrix_R,
+  Eigen::MatrixXd & control_costs)
 {
   std::size_t num_timesteps = parameters.cols();
   double cost = 0;
@@ -170,19 +159,17 @@ void computeParametersControlCosts(const Eigen::MatrixXd& parameters,
 
 namespace stomp
 {
-Stomp::Stomp(const StompConfiguration& config, TaskPtr task) : config_(config), task_(task) { resetVariables(); }
+Stomp::Stomp(const StompConfiguration & config, TaskPtr task) : config_(config), task_(task) { resetVariables(); }
 
 bool Stomp::clear() { return resetVariables(); }
 
-void Stomp::setConfig(const StompConfiguration& config)
+void Stomp::setConfig(const StompConfiguration & config)
 {
   config_ = config;
   resetVariables();
 }
 
-bool Stomp::solve(const std::vector<double>& first,
-                  const std::vector<double>& last,
-                  Eigen::MatrixXd& parameters_optimized)
+bool Stomp::solve(const std::vector<double> & first, const std::vector<double> & last, Eigen::MatrixXd & parameters_optimized)
 {
   // initialize trajectory
   if (!computeInitialTrajectory(first, last))
@@ -193,7 +180,7 @@ bool Stomp::solve(const std::vector<double>& first,
   return solve(parameters_optimized_, parameters_optimized);
 }
 
-bool Stomp::solve(const Eigen::VectorXd& first, const Eigen::VectorXd& last, Eigen::MatrixXd& parameters_optimized)
+bool Stomp::solve(const Eigen::VectorXd & first, const Eigen::VectorXd & last, Eigen::MatrixXd & parameters_optimized)
 {
   // converting to std vectors
   std::vector<double> start(first.size());
@@ -205,7 +192,7 @@ bool Stomp::solve(const Eigen::VectorXd& first, const Eigen::VectorXd& last, Eig
   return solve(start, end, parameters_optimized);
 }
 
-bool Stomp::solve(const Eigen::MatrixXd& initial_parameters, Eigen::MatrixXd& parameters_optimized)
+bool Stomp::solve(const Eigen::MatrixXd & initial_parameters, Eigen::MatrixXd & parameters_optimized)
 {
   if (parameters_optimized_.isZero())
   {
@@ -231,7 +218,7 @@ bool Stomp::solve(const Eigen::MatrixXd& initial_parameters, Eigen::MatrixXd& pa
   unsigned int valid_iterations = 0;
   current_lowest_cost_ = std::numeric_limits<double>::max();
 
-  // computing initialial trajectory cost
+  // computing initial trajectory cost
   if (!computeOptimizedCost())
   {
     CONSOLE_BRIDGE_logError("Failed to calculate initial trajectory cost");
@@ -245,8 +232,7 @@ bool Stomp::solve(const Eigen::MatrixXd& initial_parameters, Eigen::MatrixXd& pa
 
     if (parameters_valid_)
     {
-      CONSOLE_BRIDGE_logDebug("Found valid solution, will iterate %i more time(s) ",
-                              config_.num_iterations_after_valid - valid_iterations);
+      CONSOLE_BRIDGE_logDebug("Found valid solution, will iterate %i more time(s) ", config_.num_iterations_after_valid - valid_iterations);
 
       valid_iterations++;
     }
@@ -265,8 +251,7 @@ bool Stomp::solve(const Eigen::MatrixXd& initial_parameters, Eigen::MatrixXd& pa
 
   if (parameters_valid_)
   {
-    CONSOLE_BRIDGE_logInform(
-        "STOMP found a valid solution with cost %f after %i iterations", current_lowest_cost_, current_iteration_);
+    CONSOLE_BRIDGE_logInform("STOMP found a valid solution with cost %f after %i iterations", current_lowest_cost_, current_iteration_);
   }
   else
   {
@@ -356,16 +341,15 @@ bool Stomp::resetVariables()
   start_index_padded_ = FINITE_DIFF_RULE_LENGTH - 1;
   num_timesteps_padded_ = config_.num_timesteps + 2 * (FINITE_DIFF_RULE_LENGTH - 1);
   generateFiniteDifferenceMatrix(
-      num_timesteps_padded_, DerivativeOrders::STOMP_ACCELERATION, config_.delta_t, finite_diff_matrix_A_padded_);
+    num_timesteps_padded_, DerivativeOrders::STOMP_ACCELERATION, config_.delta_t, finite_diff_matrix_A_padded_);
 
   /* control cost matrix (R = A_transpose * A):
    * Note: Original code multiplies the A product by the time interval.  However this is not
    * what was described in the literature
    */
-  control_cost_matrix_R_padded_ =
-      config_.delta_t * finite_diff_matrix_A_padded_.transpose() * finite_diff_matrix_A_padded_;
-  control_cost_matrix_R_ = control_cost_matrix_R_padded_.block(
-      start_index_padded_, start_index_padded_, config_.num_timesteps, config_.num_timesteps);
+  control_cost_matrix_R_padded_ = config_.delta_t * finite_diff_matrix_A_padded_.transpose() * finite_diff_matrix_A_padded_;
+  control_cost_matrix_R_ =
+    control_cost_matrix_R_padded_.block(start_index_padded_, start_index_padded_, config_.num_timesteps, config_.num_timesteps);
   inv_control_cost_matrix_R_ = control_cost_matrix_R_.fullPivLu().inverse();
 
   /*
@@ -379,7 +363,7 @@ bool Stomp::resetVariables()
   return true;
 }
 
-bool Stomp::computeInitialTrajectory(const std::vector<double>& first, const std::vector<double>& last)
+bool Stomp::computeInitialTrajectory(const std::vector<double> & first, const std::vector<double> & last)
 {
   bool valid = true;
 
@@ -395,8 +379,7 @@ bool Stomp::computeInitialTrajectory(const std::vector<double>& first, const std
       break;
     case TrajectoryInitializations::MININUM_CONTROL_COST:
 
-      valid = computeMinCostTrajectory(
-          first, last, control_cost_matrix_R_padded_, inv_control_cost_matrix_R_, parameters_optimized_);
+      valid = computeMinCostTrajectory(first, last, control_cost_matrix_R_padded_, inv_control_cost_matrix_R_, parameters_optimized_);
       break;
   }
 
@@ -417,8 +400,8 @@ bool Stomp::runSingleIteration()
     return false;
   }
 
-  bool proceed = generateNoisyRollouts() && computeNoisyRolloutsCosts() && filterNoisyRollouts() &&
-                 computeProbabilities() && updateParameters() && computeOptimizedCost();
+  bool proceed = generateNoisyRollouts() && computeNoisyRolloutsCosts() && filterNoisyRollouts() && computeProbabilities() &&
+                 updateParameters() && computeOptimizedCost();
 
   // notifying end of iteration
   task_->postIteration(0, config_.num_timesteps, current_iteration_, current_lowest_cost_, parameters_optimized_);
@@ -436,9 +419,8 @@ bool Stomp::generateNoisyRollouts()
   rollouts_stored = rollouts_stored < 0 ? 0 : rollouts_stored;
   int rollouts_generate = config_.num_rollouts;
   int rollouts_total = rollouts_generate + rollouts_stored + 1;
-  int rollouts_reuse = rollouts_total < config_.max_rollouts ?
-                           rollouts_stored :
-                           config_.max_rollouts - (rollouts_generate + 1);  // +1 for optimized params
+  int rollouts_reuse =
+    rollouts_total < config_.max_rollouts ? rollouts_stored : config_.max_rollouts - (rollouts_generate + 1);  // +1 for optimized params
 
   // selecting least costly rollouts from previous iteration
   if (rollouts_reuse > 0)
@@ -449,15 +431,12 @@ bool Stomp::generateNoisyRollouts()
     for (int r = 1; r < rollouts_stored; ++r)
     {
       double c = noisy_rollouts_[r].total_cost;
-      if (c < min_cost)
-        min_cost = c;
-      if (c > max_cost)
-        max_cost = c;
+      if (c < min_cost) min_cost = c;
+      if (c > max_cost) max_cost = c;
     }
 
     double cost_denom = max_cost - min_cost;
-    if (cost_denom < 1e-8)
-      cost_denom = 1e-8;
+    if (cost_denom < 1e-8) cost_denom = 1e-8;
 
     // compute weighted cost on all rollouts
     double cost_prob;
@@ -502,13 +481,9 @@ bool Stomp::generateNoisyRollouts()
       return false;
     }
 
-    if (!task_->generateNoisyParameters(parameters_optimized_,
-                                        0,
-                                        config_.num_timesteps,
-                                        current_iteration_,
-                                        r,
-                                        noisy_rollouts_[r].parameters_noise,
-                                        noisy_rollouts_[r].noise))
+    if (!task_->generateNoisyParameters(
+          parameters_optimized_, 0, config_.num_timesteps, current_iteration_, r, noisy_rollouts_[r].parameters_noise,
+          noisy_rollouts_[r].noise))
     {
       CONSOLE_BRIDGE_logError("Failed to generate noisy parameters at iteration %i", current_iteration_);
       return false;
@@ -532,8 +507,7 @@ bool Stomp::filterNoisyRollouts()
       return false;
     }
 
-    if (!task_->filterNoisyParameters(
-            0, config_.num_timesteps, current_iteration_, r, noisy_rollouts_[r].parameters_noise, filtered))
+    if (!task_->filterNoisyParameters(0, config_.num_timesteps, current_iteration_, r, noisy_rollouts_[r].parameters_noise, filtered))
     {
       CONSOLE_BRIDGE_logError("Failed to filter noisy parameters");
       return false;
@@ -561,7 +535,7 @@ bool Stomp::computeNoisyRolloutsCosts()
 
     for (auto r = 0u; r < num_active_rollouts_; r++)
     {
-      Rollout& rollout = noisy_rollouts_[r];
+      Rollout & rollout = noisy_rollouts_[r];
       total_state_cost = rollout.state_costs.sum();
 
       // Compute control + state cost for each joint
@@ -598,9 +572,9 @@ bool Stomp::computeRolloutsStateCosts()
       break;
     }
 
-    Rollout& rollout = noisy_rollouts_[r];
+    Rollout & rollout = noisy_rollouts_[r];
     if (!task_->computeNoisyCosts(
-            rollout.parameters_noise, 0, config_.num_timesteps, current_iteration_, r, rollout.state_costs, all_valid))
+          rollout.parameters_noise, 0, config_.num_timesteps, current_iteration_, r, rollout.state_costs, all_valid))
     {
       CONSOLE_BRIDGE_logError("Trajectory cost computation failed for rollout %i.", r);
       proceed = false;
@@ -615,7 +589,7 @@ bool Stomp::computeRolloutsControlCosts()
   Eigen::ArrayXXd Ax;  // accelerations
   for (auto r = 0u; r < num_active_rollouts_; r++)
   {
-    Rollout& rollout = noisy_rollouts_[r];
+    Rollout & rollout = noisy_rollouts_[r];
 
     if (config_.control_cost_weight < MIN_CONTROL_COST_WEIGHT)
     {
@@ -626,11 +600,8 @@ bool Stomp::computeRolloutsControlCosts()
     }
     else
     {
-      computeParametersControlCosts(rollout.parameters_noise,
-                                    config_.delta_t,
-                                    config_.control_cost_weight,
-                                    control_cost_matrix_R_,
-                                    rollout.control_costs);
+      computeParametersControlCosts(
+        rollout.parameters_noise, config_.delta_t, config_.control_cost_weight, control_cost_matrix_R_, rollout.control_costs);
     }
   }
   return true;
@@ -657,10 +628,8 @@ bool Stomp::computeProbabilities()
       for (auto r = 0u; r < num_active_rollouts_; ++r)
       {
         cost = noisy_rollouts_[r].total_costs(d, t);
-        if (cost < min_cost)
-          min_cost = cost;
-        if (cost > max_cost)
-          max_cost = cost;
+        if (cost < min_cost) min_cost = cost;
+        if (cost > max_cost) max_cost = cost;
       }
 
       denom = max_cost - min_cost;
@@ -695,10 +664,8 @@ bool Stomp::computeProbabilities()
     for (int r = 1; r < num_active_rollouts_; ++r)
     {
       c = noisy_rollouts_[r].full_costs[d];
-      if (c < min_cost)
-        min_cost = c;
-      if (c > max_cost)
-        max_cost = c;
+      if (c < min_cost) min_cost = c;
+      if (c > max_cost) max_cost = c;
     }
 
     denom = max_cost - min_cost;
@@ -708,7 +675,7 @@ bool Stomp::computeProbabilities()
     for (int r = 0; r < num_active_rollouts_; ++r)
     {
       noisy_rollouts_[r].full_probabilities[d] =
-          noisy_rollouts_[r].importance_weight * exp(-h * (noisy_rollouts_[r].full_costs[d] - min_cost) / denom);
+        noisy_rollouts_[r].importance_weight * exp(-h * (noisy_rollouts_[r].full_costs[d] - min_cost) / denom);
       probl_sum += noisy_rollouts_[r].full_probabilities[d];
     }
     for (int r = 0; r < num_active_rollouts_; ++r)
@@ -728,14 +695,13 @@ bool Stomp::updateParameters()
   {
     for (auto r = 0u; r < num_active_rollouts_; r++)
     {
-      auto& rollout = noisy_rollouts_[r];
+      auto & rollout = noisy_rollouts_[r];
       parameters_updates_.row(d) += (rollout.noise.row(d).array() * rollout.probabilities.row(d).array()).matrix();
     }
   }
 
   // filtering updates
-  if (!task_->filterParameterUpdates(
-          0, config_.num_timesteps, current_iteration_, parameters_optimized_, parameters_updates_))
+  if (!task_->filterParameterUpdates(0, config_.num_timesteps, current_iteration_, parameters_optimized_, parameters_updates_))
   {
     CONSOLE_BRIDGE_logError("Updates filtering step failed");
     return false;
@@ -753,23 +719,15 @@ bool Stomp::computeOptimizedCost()
   parameters_total_cost_ = 0;
   if (config_.control_cost_weight > MIN_CONTROL_COST_WEIGHT)
   {
-    computeParametersControlCosts(parameters_optimized_,
-                                  config_.delta_t,
-                                  config_.control_cost_weight,
-                                  control_cost_matrix_R_,
-                                  parameters_control_costs_);
+    computeParametersControlCosts(
+      parameters_optimized_, config_.delta_t, config_.control_cost_weight, control_cost_matrix_R_, parameters_control_costs_);
 
     // adding all costs
     parameters_total_cost_ = parameters_control_costs_.rowwise().sum().sum();
   }
 
   // state costs
-  if (task_->computeCosts(parameters_optimized_,
-                          0,
-                          config_.num_timesteps,
-                          current_iteration_,
-                          parameters_state_costs_,
-                          parameters_valid_))
+  if (task_->computeCosts(parameters_optimized_, 0, config_.num_timesteps, current_iteration_, parameters_state_costs_, parameters_valid_))
   {
     parameters_total_cost_ += parameters_state_costs_.sum();
   }

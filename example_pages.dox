@@ -21,8 +21,8 @@ The full example program can be found in file @ref stomp_example_code
 
   Populate the stomp::StompConfiguration object as shown below:
   @snippet examples/stomp_example.cpp Create Config
-  
-  
+
+
   @subsection create_stomp Create an STOMP instance
 
   Create an instance of STOMP using the Task and Configuration objects created in previous steps
@@ -31,7 +31,7 @@ The full example program can be found in file @ref stomp_example_code
   @subsection solve Call the Solve Method
 
   Call the <b>solve</b> method and check the result
-  @snippet examples/stomp_example.cpp Solve 
+  @snippet examples/stomp_example.cpp Solve
 */
 
 /**

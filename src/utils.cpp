@@ -24,16 +24,13 @@
  * limitations under the License.
  */
 #include <stomp/utils.h>
+#include <Eigen/Dense>
 #include <cmath>
 #include <iostream>
-#include <Eigen/Dense>
 
 namespace stomp
 {
-void generateFiniteDifferenceMatrix(int num_time_steps,
-                                    DerivativeOrders::DerivativeOrder order,
-                                    double dt,
-                                    Eigen::MatrixXd& diff_matrix)
+void generateFiniteDifferenceMatrix(int num_time_steps, DerivativeOrders::DerivativeOrder order, double dt, Eigen::MatrixXd & diff_matrix)
 {
   diff_matrix = Eigen::MatrixXd::Zero(num_time_steps, num_time_steps);
   double multiplier = 1.0 / pow(dt, (int)order);
@@ -58,7 +55,7 @@ void generateFiniteDifferenceMatrix(int num_time_steps,
   }
 }
 
-void generateSmoothingMatrix(int num_timesteps, double dt, Eigen::MatrixXd& projection_matrix_M)
+void generateSmoothingMatrix(int num_timesteps, double dt, Eigen::MatrixXd & projection_matrix_M)
 {
   using namespace Eigen;
 
@@ -66,16 +63,14 @@ void generateSmoothingMatrix(int num_timesteps, double dt, Eigen::MatrixXd& proj
   int start_index_padded = FINITE_DIFF_RULE_LENGTH - 1;
   int num_timesteps_padded = num_timesteps + 2 * (FINITE_DIFF_RULE_LENGTH - 1);
   MatrixXd finite_diff_matrix_A_padded;
-  generateFiniteDifferenceMatrix(
-      num_timesteps_padded, DerivativeOrders::STOMP_ACCELERATION, dt, finite_diff_matrix_A_padded);
+  generateFiniteDifferenceMatrix(num_timesteps_padded, DerivativeOrders::STOMP_ACCELERATION, dt, finite_diff_matrix_A_padded);
 
   /* computing control cost matrix (R = A_transpose * A):
    * Note: Original code multiplies the A product by the time interval.  However this is not
    * what was described in the literature
    */
   MatrixXd control_cost_matrix_R_padded = dt * finite_diff_matrix_A_padded.transpose() * finite_diff_matrix_A_padded;
-  MatrixXd control_cost_matrix_R =
-      control_cost_matrix_R_padded.block(start_index_padded, start_index_padded, num_timesteps, num_timesteps);
+  MatrixXd control_cost_matrix_R = control_cost_matrix_R_padded.block(start_index_padded, start_index_padded, num_timesteps, num_timesteps);
   MatrixXd inv_control_cost_matrix_R = control_cost_matrix_R.fullPivLu().inverse();
 
   // computing projection matrix M
@@ -84,15 +79,11 @@ void generateSmoothingMatrix(int num_timesteps, double dt, Eigen::MatrixXd& proj
   for (auto t = 0u; t < num_timesteps; t++)
   {
     max = projection_matrix_M(t, t);
-    projection_matrix_M.col(t) *=
-        (1.0 / (num_timesteps * max));  // scaling such that the maximum value is 1/num_timesteps
+    projection_matrix_M.col(t) *= (1.0 / (num_timesteps * max));  // scaling such that the maximum value is 1/num_timesteps
   }
 }
 
-void differentiate(const Eigen::VectorXd& parameters,
-                   DerivativeOrders::DerivativeOrder order,
-                   double dt,
-                   Eigen::VectorXd& derivatives)
+void differentiate(const Eigen::VectorXd & parameters, DerivativeOrders::DerivativeOrder order, double dt, Eigen::VectorXd & derivatives)
 {
   using namespace Eigen;
 
@@ -137,7 +128,7 @@ void differentiate(const Eigen::VectorXd& parameters,
   derivatives = A * parameters / std::pow(dt, 2);
 }
 
-void toVector(const Eigen::MatrixXd& m, std::vector<Eigen::VectorXd>& v)
+void toVector(const Eigen::MatrixXd & m, std::vector<Eigen::VectorXd> & v)
 {
   v.resize(m.rows(), Eigen::VectorXd::Zero(m.cols()));
   for (auto d = 0u; d < m.rows(); d++)
@@ -146,7 +137,7 @@ void toVector(const Eigen::MatrixXd& m, std::vector<Eigen::VectorXd>& v)
   }
 }
 
-std::string toString(const std::vector<Eigen::VectorXd>& data)
+std::string toString(const std::vector<Eigen::VectorXd> & data)
 {
   Eigen::IOFormat clean_format(4, 0, ", ", "\n", "[", "]");
   Eigen::MatrixXd m = Eigen::MatrixXd::Zero(data.size(), data.front().size());
@@ -160,7 +151,7 @@ std::string toString(const std::vector<Eigen::VectorXd>& data)
   return ss.str();
 }
 
-std::string toString(const Eigen::MatrixXd& data)
+std::string toString(const Eigen::MatrixXd & data)
 {
   Eigen::IOFormat clean_format(4, 0, ", ", "\n", "[", "]");
   std::stringstream ss;
@@ -168,7 +159,7 @@ std::string toString(const Eigen::MatrixXd& data)
   return ss.str();
 }
 
-std::string toString(const Eigen::VectorXd& data)
+std::string toString(const Eigen::VectorXd & data)
 {
   Eigen::IOFormat clean_format(4, 0, ", ", "\n", "[", "]");
   std::stringstream ss;

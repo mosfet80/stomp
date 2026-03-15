@@ -42,10 +42,9 @@ public:
    * @param bias_thresholds threshold to determine whether two trajectories are equal
    * @param std_dev standard deviation used for generating noisy parameters
    */
-  SimpleOptimizationTask(const Eigen::MatrixXd& parameters_bias,
-                         const std::vector<double>& bias_thresholds,
-                         const std::vector<double>& std_dev)
-    : parameters_bias_(parameters_bias), bias_thresholds_(bias_thresholds), std_dev_(std_dev)
+  SimpleOptimizationTask(
+    const Eigen::MatrixXd & parameters_bias, const std::vector<double> & bias_thresholds, const std::vector<double> & std_dev)
+  : parameters_bias_(parameters_bias), bias_thresholds_(bias_thresholds), std_dev_(std_dev)
   {
     // generate smoothing matrix
     int num_timesteps = parameters_bias.cols();
@@ -65,13 +64,9 @@ public:
    * @param noise             The noise applied to the parameters
    * @return True if cost were properly computed, otherwise false
    */
-  bool generateNoisyParameters(const Eigen::MatrixXd& parameters,
-                               std::size_t start_timestep,
-                               std::size_t num_timesteps,
-                               int iteration_number,
-                               int rollout_number,
-                               Eigen::MatrixXd& parameters_noise,
-                               Eigen::MatrixXd& noise) override
+  bool generateNoisyParameters(
+    const Eigen::MatrixXd & parameters, std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, int rollout_number,
+    Eigen::MatrixXd & parameters_noise, Eigen::MatrixXd & noise) override
   {
     double rand_noise;
     for (std::size_t d = 0; d < parameters.rows(); d++)
@@ -99,12 +94,9 @@ public:
    * @param validity          Whether or not the trajectory is valid
    * @return True if cost were properly computed, otherwise false
    */
-  bool computeCosts(const Eigen::MatrixXd& parameters,
-                    std::size_t start_timestep,
-                    std::size_t num_timesteps,
-                    int iteration_number,
-                    Eigen::VectorXd& costs,
-                    bool& validity) override
+  bool computeCosts(
+    const Eigen::MatrixXd & parameters, std::size_t start_timestep, std::size_t num_timesteps, int iteration_number,
+    Eigen::VectorXd & costs, bool & validity) override
   {
     return computeNoisyCosts(parameters, start_timestep, num_timesteps, iteration_number, -1, costs, validity);
   }
@@ -120,13 +112,9 @@ public:
    * @param validity          Whether or not the trajectory is valid
    * @return True if cost were properly computed, otherwise false
    */
-  bool computeNoisyCosts(const Eigen::MatrixXd& parameters,
-                         std::size_t start_timestep,
-                         std::size_t num_timesteps,
-                         int iteration_number,
-                         int rollout_number,
-                         Eigen::VectorXd& costs,
-                         bool& validity) override
+  bool computeNoisyCosts(
+    const Eigen::MatrixXd & parameters, std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, int rollout_number,
+    Eigen::VectorXd & costs, bool & validity) override
   {
     costs.setZero(num_timesteps);
     double diff;
@@ -163,11 +151,9 @@ public:
    * @param updates           The updates to the parameters
    * @return                  True if successful, otherwise false
    */
-  bool filterParameterUpdates(std::size_t start_timestep,
-                              std::size_t num_timesteps,
-                              int iteration_number,
-                              const Eigen::MatrixXd& parameters,
-                              Eigen::MatrixXd& updates) override
+  bool filterParameterUpdates(
+    std::size_t start_timestep, cstd::size_t num_timesteps, cint iteration_number, const Eigen::MatrixXd & parameters,
+    Eigen::MatrixXd & updates) override
   {
     return smoothParameterUpdates(start_timestep, num_timesteps, iteration_number, updates);
   }
@@ -177,14 +163,11 @@ protected:
    * @brief Perform a smooth update given a noisy update
    * @param start_timestep starting timestep
    * @param num_timesteps number of timesteps
-   * @param iteration_number number of interations allowed
+   * @param iteration_number number of iterations allowed
    * @param updates returned smooth update
    * @return True if successful, otherwise false
    */
-  bool smoothParameterUpdates(std::size_t start_timestep,
-                              std::size_t num_timesteps,
-                              int iteration_number,
-                              Eigen::MatrixXd& updates)
+  bool smoothParameterUpdates(std::size_t start_timestep, std::size_t num_timesteps, int iteration_number, Eigen::MatrixXd & updates)
   {
     for (auto d = 0u; d < updates.rows(); d++)
     {
