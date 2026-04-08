@@ -31,7 +31,7 @@ endif()
 # Declare a C++ library
 add_library(${PROJECT_NAME} src/stomp.cpp src/utils.cpp)
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen console_bridge::console_bridge)
-target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 11)
+target_cxx_version(${PROJECT_NAME} PUBLIC VERSION 14)
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
 

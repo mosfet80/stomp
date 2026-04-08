@@ -32,7 +32,7 @@ include(GoogleTest)
 
 add_executable(${PROJECT_NAME}_unit utest.cpp stomp_3dof.cpp)
 target_link_libraries(${PROJECT_NAME}_unit PRIVATE GTest::GTest GTest::Main ${PROJECT_NAME})
-target_cxx_version(${PROJECT_NAME}_unit PUBLIC VERSION 11)
+target_cxx_version(${PROJECT_NAME}_unit PUBLIC VERSION 14)
 add_gtest_discover_tests(${PROJECT_NAME}_unit)
 add_dependencies(${PROJECT_NAME}_unit ${PROJECT_NAME})
 add_dependencies(run_tests ${PROJECT_NAME}_unit)
